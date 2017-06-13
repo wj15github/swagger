@@ -1,1 +1,1 @@
-go run generator.go -apiPackage="github.com/yvasiyarov/swagger/example" -mainApiFile="github.com/yvasiyarov/swagger/example/web/main.go" -format="swagger"
+go run main.go -apiPackage="github.com/wj15github/swagger/example" -mainApiFile="github.com/wj15github/swagger/example/server.go" -format="swagger" -output "./swagger-ui-2.2.10"

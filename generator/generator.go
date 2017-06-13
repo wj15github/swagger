@@ -92,6 +92,29 @@ func generateSwaggerDocs(parser *parser.Parser, outputSpec string, pkg bool) err
 	return nil
 }
 
+func sortAPI(apiDecl *parser.ApiDeclaration) *parser.ApiDeclaration {
+	apiNum := len(apiDecl.Apis)
+	for i := 0; i < apiNum; i++ {
+		for j := 0; j < apiNum-1-i; j++ {
+			s := strings.Split(apiDecl.Apis[j].Path, "/") // extract api name
+			apiName1 := s[len(s)-1]
+			s = strings.Split(apiDecl.Apis[j+1].Path, "/")
+			apiName2 := s[len(s)-1]
+			if strings.Compare(apiName1, apiName2) > 0 {
+				tmp := apiDecl.Apis[j]
+				apiDecl.Apis[j] = apiDecl.Apis[j+1]
+				apiDecl.Apis[j+1] = tmp
+			}
+		}
+	}
+	// for _, api := range apiDecl.Apis {
+	// 	// extract api name
+	// 	s := strings.Split(api.Path, "/")
+	// 	log.Println(s[len(s)-1])
+	// }
+	return apiDecl
+}
+
 func generateSwaggerUiFiles(parser *parser.Parser, outputSpec string) error {
 	fd, err := os.Create(path.Join(outputSpec, "index.json"))
 	if err != nil {
@@ -101,6 +124,7 @@ func generateSwaggerUiFiles(parser *parser.Parser, outputSpec string) error {
 	fd.WriteString(string(parser.GetResourceListingJson()))
 
 	for apiKey, apiDescription := range parser.TopLevelApis {
+		log.Println(">>>>" + apiKey)
 		err = os.MkdirAll(path.Join(outputSpec, apiKey), 0777)
 		if err != nil {
 			return err
@@ -112,11 +136,11 @@ func generateSwaggerUiFiles(parser *parser.Parser, outputSpec string) error {
 		}
 		defer fd.Close()
 
+		apiDescription = sortAPI(apiDescription)
 		json, err := json.MarshalIndent(apiDescription, "", "    ")
 		if err != nil {
 			return fmt.Errorf("Can not serialise []ApiDescription to JSON: %v\n", err)
 		}
-
 		fd.Write(json)
 		log.Printf("Wrote %v/index.json", apiKey)
 	}
@@ -141,7 +165,7 @@ func InitParser(controllerClass, ignore string) *parser.Parser {
 
 type Params struct {
 	ApiPackage, MainApiFile, OutputFormat, OutputSpec, ControllerClass, Ignore, VendoringPath string
-	ContentsTable, Models                                                      bool
+	ContentsTable, Models                                                                     bool
 }
 
 func Run(params Params) error {
@@ -175,7 +199,6 @@ func Run(params Params) error {
 			return fmt.Errorf("Could not find apifile %s to parse\n", apifile)
 		}
 	}
-
 	parser.ParseApi(params.ApiPackage, params.VendoringPath)
 	log.Println("Finish parsing")
 

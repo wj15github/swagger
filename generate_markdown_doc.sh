@@ -1,1 +1,1 @@
-$GOPATH/bin/swagger -apiPackage="github.com/yvasiyarov/swagger/example" -mainApiFile="github.com/yvasiyarov/swagger/example/web/main.go" -format="markdown" -output="API.md" -basePath="http://127.0.0.1:8080"
+go run main.go -apiPackage="github.com/wj15github/swagger/example" -mainApiFile="github.com/wj15github/swagger/example/server.go" -format="markdown" -output="API.md"
